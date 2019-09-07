@@ -21,7 +21,7 @@ function displayMenu(){
             {
                 name: "option",
                 type: "list",
-                choices: ["View Inventory", "Low Inventory Items", "Add to Inventory", "Add New Product"]
+                choices: ["View Inventory", "Low Inventory Items", "Add to Inventory", "Add New Product", "Quit"]
             }
         ])
         .then((res) => {
@@ -34,6 +34,9 @@ function displayMenu(){
                     break
                 case "Add to Inventory":
                     addInventory()
+                    break
+                case "Quit":
+                    connection.end()
                     break
             }
         })
@@ -49,12 +52,12 @@ function viewAllInventory(){
         }
 
         console.log("-----------------------------------")
-        connection.end()
+        displayMenu()
     })
 }
 
 function viewLowInventory(){
-    connection.query("SELECT * FROM products WHERE stock_quantity <= 5", (err, res) => {
+    connection.query("SELECT * FROM products WHERE ?? <= ?", ["stock_quantity",5], (err, res) => {
         if (err) throw err
 
         for (let i = 0; i < res.length; i++) {
@@ -62,7 +65,7 @@ function viewLowInventory(){
         }
 
         console.log("-----------------------------------")
-        connection.end()
+        displayMenu()
     })
 }
 
@@ -101,7 +104,7 @@ function addInventory(){
                     (err, qres2) => {
                         if (err) throw err
                         console.log(qres2)
-                        connection.end()
+                        displayMenu()
                     })
             })
         })

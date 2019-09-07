@@ -13,7 +13,6 @@ connection.connect((err) => {
     if (err) throw err
     console.log("connected as id " + connection.threadId)
     displayProducts()
-    makePurchase()
 })
 
 function displayProducts() {
@@ -26,6 +25,7 @@ function displayProducts() {
         }
 
         console.log("-----------------------------------")
+        makePurchase()
     })
 }
 
