@@ -13,7 +13,7 @@ connection.connect((err) => {
     if (err) throw err;
     console.log("connected as id " + connection.threadId)
     displayProducts()
-    prompt()
+    makePurchase()
     
 })
 
@@ -30,7 +30,7 @@ function displayProducts() {
     })
 }
 
-function prompt(){
+function makePurchase(){
     inquirer
         .prompt([
             {
@@ -44,19 +44,40 @@ function prompt(){
                 message: "Enter quantity to purchase:"
             }
         ])
-        .then((res) => {
-            connection.query("SELECT stock_quantity FROM products WHERE ?",
+        .then((ires) => {
+            connection.query("SELECT stock_quantity, price FROM products WHERE ?",
             {
-                item_id: res.product
+                item_id: ires.product
             },
             (err, qres) => {
                 if (err) throw err
-                
-                if(qres[0].stock_quantity < res.quantity){
+
+                if(qres[0].stock_quantity < ires.quantity){
                     console.log("Insufficient quantity!")
+                }
+                else{
+                    console.log(qres[0].price)
+                    let newQuant =  - 
+                    completeTransaction(ires.product, qres[0].stock_quantity, ires.quantity, qres[0].price)
                 }
             }
             )
-        connection.end()
+        })
+}
+
+function completeTransaction(product, stockQuant, orderQuant, price){
+    connection.query("UPDATE products SET ? WHERE ?",
+        [
+            {
+                stock_quantity: stockQuant - orderQuant
+            },
+            {
+                item_id: product
+            }
+        ],
+        (err, res) => {
+            if (err) throw err
+            console.log("Total: $" + price*orderQuant)
+            connection.end()
         })
 }
