@@ -10,17 +10,16 @@ var connection = mysql.createConnection({
 })
 
 connection.connect((err) => {
-    if (err) throw err;
+    if (err) throw err
     console.log("connected as id " + connection.threadId)
     displayProducts()
     makePurchase()
-    
 })
 
 function displayProducts() {
     connection.query("SELECT * FROM products", (err, res) => {
         if (err) throw err
-        console.log("item_id" + " | " + "product_name" + " | " + "department_name" + " | " + "price" + " | " + "stock_quantity")
+        console.log("\nitem_id" + " | " + "product_name" + " | " + "department_name" + " | " + "price" + " | " + "stock_quantity")
 
         for (let i = 0; i < res.length; i++) {
             console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity)
@@ -56,8 +55,6 @@ function makePurchase(){
                     console.log("Insufficient quantity!")
                 }
                 else{
-                    console.log(qres[0].price)
-                    let newQuant =  - 
                     completeTransaction(ires.product, qres[0].stock_quantity, ires.quantity, qres[0].price)
                 }
             }
@@ -75,7 +72,7 @@ function completeTransaction(product, stockQuant, orderQuant, price){
                 item_id: product
             }
         ],
-        (err, res) => {
+        (err) => {
             if (err) throw err
             console.log("Total: $" + price*orderQuant)
             connection.end()
