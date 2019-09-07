@@ -32,8 +32,10 @@ function displayMenu(){
                 case "Low Inventory Items":
                     viewLowInventory()
                     break
+                case "Add to Inventory":
+                    addInventory()
+                    break
             }
-            connection.end()
         })
 }
 
@@ -47,9 +49,63 @@ function viewAllInventory(){
         }
 
         console.log("-----------------------------------")
+        connection.end()
     })
 }
 
 function viewLowInventory(){
+    connection.query("SELECT * FROM products WHERE stock_quantity <= 5", (err, res) => {
+        if (err) throw err
 
+        for (let i = 0; i < res.length; i++) {
+            console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity)
+        }
+
+        console.log("-----------------------------------")
+        connection.end()
+    })
 }
+
+function addInventory(){
+    inquirer
+        .prompt([
+            {
+                name: "product",
+                type: "input",
+                message: "Enter item_id to restock:"
+            },
+            {
+                name: "quantity",
+                type: "input",
+                message: "Enter quantity to order:"
+            }
+        ])
+        .then((ires) => {
+            connection.query("SELECT stock_quantity, price FROM products WHERE ?",
+            {
+                item_id: ires.product
+            },
+            (err, qres1) => {
+                if (err) throw err
+                let curQuant = qres1[0].stock_quantity
+                
+                connection.query("UPDATE products SET ? WHERE ?",
+                    [
+                        {
+                            stock_quantity: curQuant + parseInt(ires.quantity)
+                        },
+                        {
+                            item_id: ires.product
+                        }
+                    ],
+                    (err, qres2) => {
+                        if (err) throw err
+                        console.log(qres2)
+                        connection.end()
+                    })
+            })
+        })
+}
+
+
+
