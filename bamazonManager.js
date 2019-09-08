@@ -35,6 +35,9 @@ function displayMenu(){
                 case "Add to Inventory":
                     addInventory()
                     break
+                case "Add New Product":
+                    addNewProduct()
+                    break
                 case "Quit":
                     connection.end()
                     break
@@ -110,5 +113,38 @@ function addInventory(){
         })
 }
 
+function addNewProduct(){
+    inquirer
+        .prompt([
+            {
+                name: "product",
+                type: "input",
+                message: "Enter product name:"
+            },
+            {
+                name: "quantity",
+                type: "input",
+                message: "Enter quantity to stock:"
+            },
+            {
+                name: "price",
+                type: "input",
+                message: "Enter sale price:"
+            },
+            {
+                name: "department",
+                type: "list",
+                message: "Select department:",
+                choices: ["Automotive","Books", "Clothing", "Electronics", "Food", "Home Goods", "Kids", "Pets", "Self-Care", "Sports & Outdoor", "Stationery"]
+            }
+        ])
+        .then((ires) => {
+            connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES (?,?,?,?) ",[ires.product, ires.department, parseFloat(ires.price), parseInt(ires.quantity)],(err, qres) => {
+                if (err) throw err
+                console.log("\n" + ires.quantity + " " + ires.product + " added to inventory.\n")
+                displayMenu()
+            })
+        })
+}
 
 
