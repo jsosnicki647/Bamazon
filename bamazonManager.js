@@ -1,5 +1,6 @@
 const mysql = require("mysql")
 const inquirer = require("inquirer")
+const Table = require("cli-table")
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -21,6 +22,7 @@ function displayMenu(){
             {
                 name: "option",
                 type: "list",
+                message: "Select option:",
                 choices: ["View Inventory", "Low Inventory Items", "Add to Inventory", "Add New Product", "Quit"]
             }
         ])
@@ -45,16 +47,27 @@ function displayMenu(){
         })
 }
 
+function renderTable(rows){
+    let table = new Table({
+            head: ["item_id", "product_name", "department_name", "price", "stock_quantity"],
+            colwidths: [100, 200]
+        })
+    for (let i=0; i<rows.length; i++){
+        table.push(rows[i])
+    }
+    console.log(table.toString())
+}
+
 function viewAllInventory(){
     connection.query("SELECT * FROM products", (err, res) => {
         if (err) throw err
-        console.log("\nitem_id" + " | " + "product_name" + " | " + "department_name" + " | " + "price" + " | " + "stock_quantity")
+        let rows = []
 
-        for (let i = 0; i < res.length; i++) {
-            console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity)
+        for(let i=0; i<res.length; i++){
+            rows.push([res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity])
         }
 
-        console.log("-----------------------------------")
+        renderTable(rows)
         displayMenu()
     })
 }
@@ -62,12 +75,13 @@ function viewAllInventory(){
 function viewLowInventory(){
     connection.query("SELECT * FROM products WHERE ?? <= ?", ["stock_quantity",5], (err, res) => {
         if (err) throw err
+        let rows = []
 
         for (let i = 0; i < res.length; i++) {
-            console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity)
+            rows.push([res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity])
         }
 
-        console.log("-----------------------------------")
+        renderTable(rows)
         displayMenu()
     })
 }
