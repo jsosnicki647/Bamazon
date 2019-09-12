@@ -98,7 +98,7 @@ function addInventory() {
                 {
                     name: "quantity",
                     type: "input",
-                    message: "\nEnter quantity to order:"
+                    message: "Enter quantity to order:"
                 }
             ])
             .then((ires) => {
@@ -131,11 +131,11 @@ function addInventory() {
 }
 
 async function addNewProduct() {
-    let promise = new Promise((resolve) =>{
+    let promise1 = new Promise((resolve) =>{
         resolve(getDepts())
     })
 
-    let depts = await promise
+    let depts = await promise1
 
     inquirer
         .prompt([{
@@ -146,36 +146,33 @@ async function addNewProduct() {
             {
                 name: "quantity",
                 type: "input",
-                message: "\nEnter quantity to stock:"
+                message: "Enter quantity to stock:"
             },
             {
                 name: "price",
                 type: "input",
-                message: "\nEnter sale price:"
+                message: "Enter sale price:"
             },
             {
                 name: "department",
                 type: "list",
-                message: "\nSelect department:",
+                message: "Select department:",
                 choices: depts.name
             }
         ])
         .then((ires) => {
             let id = depts.id[depts.name.indexOf(ires.department)]
-            if (id<0) {
-                getNewDeptDetails()
-            }
-            else{
 
-                connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales, department_id) VALUES (?,?,?,?,?,?)",
-                [ires.product, ires.department, parseFloat(ires.price), parseInt(ires.quantity), 0, id], (err, qres) => {
-                    if (err) throw err
-                    console.log("\n" + ires.product + ": " + ires.quantity + " added to inventory.\n")
-                    displayMenu()
-                })
-            }
+            connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales, department_id) VALUES (?,?,?,?,?,?)",
+            [ires.product, ires.department, parseFloat(ires.price), parseInt(ires.quantity), 0, id], (err, qres) => {
+                if (err) throw err
+                console.log("\n" + ires.product + ": " + ires.quantity + " added to inventory.\n")
+                displayMenu()
+            })
         })
 }
+
+
 
 function getNewDeptDetails(){
     inquirer
@@ -183,7 +180,7 @@ function getNewDeptDetails(){
             {
                 name: "name",
                 type: "input",
-                message: "Department name:"
+                message: "\nDepartment name:"
             },
             {
                 name: "cost",
@@ -192,14 +189,15 @@ function getNewDeptDetails(){
             }
         ])
         .then((res) => {
-            createDepartment(res.name, res.cost)
+            return [createDepartment(res.name, res.cost), res.name]
         })
 }
 
 function createDepartment(name, cost){
-    connection.query("INSERT INTO departments SET ?", {department_name: name, over_head_costs: cost}, (err) => {
+    connection.query("INSERT INTO departments SET ?", {department_name: name, over_head_costs: cost}, (err, result) => {
         if (err) throw err
         console.log(name + " department added.")
+        return result.insertId
     })
 }
 
@@ -214,8 +212,6 @@ async function getDepts() {
                 names.push(res[i].department_name)
                 ids.push(res[i].department_id)
             }
-
-            names.push("--NEW--")
 
             let choices = {
                 name: names,

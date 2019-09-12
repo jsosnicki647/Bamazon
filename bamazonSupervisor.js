@@ -22,7 +22,7 @@ function displayMenu(){
             {
                 name: "option",
                 type: "list",
-                message: "Select option:",
+                message: "\nSelect option:",
                 choices: ["View Product Sales by Department", "Create New Department", "Quit"]
             }
         ])
@@ -64,7 +64,7 @@ function getNewDeptDetails(){
             {
                 name: "name",
                 type: "input",
-                message: "Department name:"
+                message: "\nDepartment name:"
             },
             {
                 name: "cost",
