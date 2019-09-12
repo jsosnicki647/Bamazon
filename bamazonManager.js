@@ -130,53 +130,101 @@ function addInventory() {
     }, 250)
 }
 
-function addNewProduct() {
-    // let depts = getDepts()
-    // setTimeout(() =>{
-        // console.log(depts)
-        inquirer
-            .prompt([{
-                    name: "product",
-                    type: "input",
-                    message: "\nEnter product name:"
-                },
-                {
-                    name: "quantity",
-                    type: "input",
-                    message: "\nEnter quantity to stock:"
-                },
-                {
-                    name: "price",
-                    type: "input",
-                    message: "\nEnter sale price:"
-                },
-                {
-                    name: "department",
-                    type: "list",
-                    message: "\nSelect department:",
-                    choices: getDepts()
-                }
-            ])
-            .then((ires) => {
-                connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES (?,?,?,?) ", [ires.product, ires.department, parseFloat(ires.price), parseInt(ires.quantity)], (err, qres) => {
+async function addNewProduct() {
+    let promise = new Promise((resolve) =>{
+        resolve(getDepts())
+    })
+
+    let depts = await promise
+
+    inquirer
+        .prompt([{
+                name: "product",
+                type: "input",
+                message: "\nEnter product name:"
+            },
+            {
+                name: "quantity",
+                type: "input",
+                message: "\nEnter quantity to stock:"
+            },
+            {
+                name: "price",
+                type: "input",
+                message: "\nEnter sale price:"
+            },
+            {
+                name: "department",
+                type: "list",
+                message: "\nSelect department:",
+                choices: depts.name
+            }
+        ])
+        .then((ires) => {
+            let id = depts.id[depts.name.indexOf(ires.department)]
+            if (id<0) {
+                getNewDeptDetails()
+            }
+            else{
+
+                connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales, department_id) VALUES (?,?,?,?,?,?)",
+                [ires.product, ires.department, parseFloat(ires.price), parseInt(ires.quantity), 0, id], (err, qres) => {
                     if (err) throw err
-                    console.log("\n" + ires.quantity + " " + ires.product + " added to inventory.\n")
+                    console.log("\n" + ires.product + ": " + ires.quantity + " added to inventory.\n")
                     displayMenu()
                 })
-            })
-    // }, 1000)
+            }
+        })
 }
 
-function getDepts() {
-    let choices = []
+function getNewDeptDetails(){
+    inquirer
+        .prompt([
+            {
+                name: "name",
+                type: "input",
+                message: "Department name:"
+            },
+            {
+                name: "cost",
+                type: "input",
+                message: "Overhead cost:"
+            }
+        ])
+        .then((res) => {
+            createDepartment(res.name, res.cost)
+        })
+}
 
-    connection.query("SELECT department_name FROM departments", (err, res) => {
+function createDepartment(name, cost){
+    connection.query("INSERT INTO departments SET ?", {department_name: name, over_head_costs: cost}, (err) => {
         if (err) throw err
-
-        for (let i = 0; i < res.length; i++) {
-            choices.push(res[i].department_name)
-        }
+        console.log(name + " department added.")
     })
-    
-    return choices
+}
+
+async function getDepts() {
+    let names = []
+    let ids = []
+    let promise = new Promise((resolve) =>{
+        connection.query("SELECT department_name, department_id FROM departments", (err, res) => {
+            if (err) throw err
+
+            for (let i = 0; i < res.length; i++) {
+                names.push(res[i].department_name)
+                ids.push(res[i].department_id)
+            }
+
+            names.push("--NEW--")
+
+            let choices = {
+                name: names,
+                id: ids
+            }
+            resolve(choices)
+        })
+    })
+       
+    let result = await promise
+    return result
 }
