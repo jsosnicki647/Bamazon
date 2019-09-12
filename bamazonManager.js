@@ -52,9 +52,11 @@ function renderTable(rows){
             head: ["item_id", "product_name", "department_name", "price", "stock_quantity"],
             colwidths: [100, 200]
         })
+
     for (let i=0; i<rows.length; i++){
         table.push(rows[i])
     }
+
     console.log(table.toString())
 }
 
@@ -73,7 +75,7 @@ function viewAllInventory(){
 }
 
 function viewLowInventory(){
-    connection.query("SELECT * FROM products WHERE ?? <= ?", ["stock_quantity",5], (err, res) => {
+    connection.query("SELECT * FROM products WHERE ?? <= ?", ["stock_quantity",10], (err, res) => {
         if (err) throw err
         let rows = []
 

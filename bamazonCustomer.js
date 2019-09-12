@@ -49,7 +49,7 @@ function makePurchase(){
             }
         ])
         .then((ires) => {
-            connection.query("SELECT stock_quantity, price FROM products WHERE ?",
+            connection.query("SELECT stock_quantity, price, product_sales FROM products WHERE ?",
             {
                 item_id: ires.product
             },
@@ -60,14 +60,14 @@ function makePurchase(){
                     console.log("Insufficient quantity!")
                 }
                 else{
-                    completeTransaction(ires.product, qres[0].stock_quantity, ires.quantity, qres[0].price)
+                    completeTransaction(ires.product, qres[0].stock_quantity, ires.quantity, qres[0].price, qres[0].product_sales)
                 }
             }
             )
         })
 }
 
-function completeTransaction(product, stockQuant, orderQuant, price){
+function completeTransaction(product, stockQuant, orderQuant, price, productSales){
     connection.query("UPDATE products SET ? WHERE ?",
         [
             {
@@ -79,7 +79,17 @@ function completeTransaction(product, stockQuant, orderQuant, price){
         ],
         (err) => {
             if (err) throw err
-            console.log("Total: $" + (price*orderQuant).toFixed(2))
-            connection.end()
+            let total = (price*orderQuant).toFixed(2)
+            console.log("Total: $" + total)
+            updateSalesTotal(product, total, productSales)
         })
+}
+
+function updateSalesTotal(product, total, productSales){
+    connection.query("UPDATE products SET ?? = ? WHERE ?? = ?", ["product_sales", parseFloat(productSales) + parseFloat(total), "item_id", product], (err) => {
+        if (err) throw err
+        console.log("\n-----------------------------")
+        console.log("Product sales updated.")
+        connection.end()
+    })
 }
