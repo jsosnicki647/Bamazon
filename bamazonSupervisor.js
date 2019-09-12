@@ -23,7 +23,7 @@ function displayMenu(){
                 name: "option",
                 type: "list",
                 message: "Select option:",
-                choices: ["View Product Sales by Department", "Create New Department"]
+                choices: ["View Product Sales by Department", "Create New Department", "Quit"]
             }
         ])
         .then((res) => {
@@ -32,7 +32,7 @@ function displayMenu(){
                     viewSales()
                     break
                 case "Create New Department":
-                    createDepartment()
+                    getNewDeptDetails()
                     break
                 case "Quit":
                     connection.end()
@@ -42,7 +42,7 @@ function displayMenu(){
 }
 
 function viewSales(){
-    connection.query("SELECT d.department_id, d.department_name, d.over_head_costs, p.product_sales, p.product_sales - d.over_head_costs as 'total_profit' FROM departments as d LEFT JOIN products as p on p.department_id = d.department_id GROUP BY d.department_id", (err, res) =>{
+    connection.query("SELECT d.department_id, d.department_name, d.over_head_costs, p.product_sales, p.product_sales - d.over_head_costs as 'total_profit' FROM departments as d INNER JOIN products as p on p.department_id = d.department_id GROUP BY d.department_id", (err, res) =>{
         if (err) throw err
         var table = new Table({
             head: ["department_id", "department_name", "over_head_costs", "product_sales", "total_profit"],
@@ -54,6 +54,33 @@ function viewSales(){
         }
 
         console.log(table.toString())
+        displayMenu()
     })
 }
 
+function getNewDeptDetails(){
+    inquirer
+        .prompt([
+            {
+                name: "name",
+                type: "input",
+                message: "Department name:"
+            },
+            {
+                name: "cost",
+                type: "input",
+                message: "Overhead cost:"
+            }
+        ])
+        .then((res) => {
+            createDepartment(res.name, res.cost)
+        })
+}
+
+function createDepartment(name, cost){
+    connection.query("INSERT INTO departments SET ?", {department_name: name, over_head_costs: cost}, (err) => {
+        if (err) throw err
+        console.log(name + " department added.")
+    })
+    displayMenu()
+}
