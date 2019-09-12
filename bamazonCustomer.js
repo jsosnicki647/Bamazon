@@ -80,7 +80,9 @@ function completeTransaction(product, stockQuant, orderQuant, price, productSale
         (err) => {
             if (err) throw err
             let total = (price*orderQuant).toFixed(2)
+            console.log("\n-----------------------------")
             console.log("Total: $" + total)
+            console.log("-----------------------------")
             updateSalesTotal(product, total, productSales)
         })
 }
@@ -88,8 +90,7 @@ function completeTransaction(product, stockQuant, orderQuant, price, productSale
 function updateSalesTotal(product, total, productSales){
     connection.query("UPDATE products SET ?? = ? WHERE ?? = ?", ["product_sales", parseFloat(productSales) + parseFloat(total), "item_id", product], (err) => {
         if (err) throw err
-        console.log("\n-----------------------------")
-        console.log("Product sales updated.")
         connection.end()
     })
 }
+
