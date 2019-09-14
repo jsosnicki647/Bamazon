@@ -172,35 +172,6 @@ async function addNewProduct() {
         })
 }
 
-
-
-function getNewDeptDetails(){
-    inquirer
-        .prompt([
-            {
-                name: "name",
-                type: "input",
-                message: "\nDepartment name:"
-            },
-            {
-                name: "cost",
-                type: "input",
-                message: "Overhead cost:"
-            }
-        ])
-        .then((res) => {
-            return [createDepartment(res.name, res.cost), res.name]
-        })
-}
-
-function createDepartment(name, cost){
-    connection.query("INSERT INTO departments SET ?", {department_name: name, over_head_costs: cost}, (err, result) => {
-        if (err) throw err
-        console.log(name + " department added.")
-        return result.insertId
-    })
-}
-
 async function getDepts() {
     let names = []
     let ids = []
